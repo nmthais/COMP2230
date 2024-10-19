@@ -32,7 +32,7 @@ public class UpgradeCalculator {
      */
     public void loadMap(){
         if (cityMap == null) {
-            cityMap = mapGen.generateMap(); // You can optionally pass in an integer here to set the size of the largest connected component in the map
+            cityMap = mapGen.generateMap(10); // You can optionally pass in an integer here to set the size of the largest connected component in the map
         }
 
         // Write your code below this line - just copy from your assignment 1 solution, it's the same map generator
@@ -52,8 +52,11 @@ public class UpgradeCalculator {
             upgradeData = checker.upgradeAnalyser();
         }
         // Write your code below this line
+        //System.out.println(budgetLimit +" " + timeLimit);
+
+        // timeLimit =9;
+        // budgetLimit=9;
         UpgradeCity upgrade = new UpgradeCity(upgradeData);
-        
         int totalItem = graph.getGraph().size();
         //int budgetLimit
         //int timeLimit
@@ -70,7 +73,6 @@ public class UpgradeCalculator {
     public String [] dpSub(int totalItem, int budgetLimit, int timeLimit, int [] budgetArray, 
                         int [] timeArray, int [] value, int [][][] totalV, boolean [][][] pickedItems){
         ArrayList<String> answer = new ArrayList<>();
-        int[] tempV = value.clone();
         for(int l=0; l<= budgetLimit;l++){          //base case when budget ==0
             totalV[0][l][0] =0;
             pickedItems[0][l][0]=false;
@@ -84,111 +86,109 @@ public class UpgradeCalculator {
             pickedItems[0][0][m]=false;
         }
         for(int k=1; k<=totalItem;k++){            // looping through the intersection list
-            for(int m=1; m<=5;m++){
-                for(int l=1;l<=5;l++){
-                    if(l < budgetArray[k-1] || m< timeArray[k-1]){
+            for(int m=1 ;m<=timeLimit;m++){
+                for(int l=1; l<=budgetLimit;l++){
+                    if(l < budgetArray[k-1] || m < timeArray[k-1]){
                         totalV[k][l][m] = totalV[k - 1][l][m];
                         pickedItems[k][l][m] = false;
                     }
+                    else {
+                        int [] tempV = value.clone();
+                        int num;
+                        int budget = l - budgetArray[k-1];
+                        int time = m - timeArray[k-1];
+                        
+                        tempV = updateValueArrayDP(k-1, budget, time, budgetArray, timeArray, pickedItems, value);
+                        num = totalV[k - 1][budget][time] + tempV[k-1];
 
-                // Case 2: Try to include the item if within budget and time
-                    else /*if (l >= budgetArray[k - 1] && m >= timeArray[k - 1]) */{
-                        int tempVTotal = totalV[k - 1][l - budgetArray[k - 1]][m - timeArray[k - 1]] + tempV[k - 1];
-                        int VTotal = totalV[k - 1][l - budgetArray[k - 1]][m - timeArray[k - 1]] + value[k - 1];
-                        int bestTotal = Math.max(tempVTotal, VTotal);
-
-                    // If adding the item provides a better value, update the DP table
-                        if (bestTotal > totalV[k-1][l][m]) {
-                            totalV[k][l][m] = bestTotal;
+                        if (num > totalV[k - 1][l][m]) {
+                            totalV[k][l][m] = num;
                             pickedItems[k][l][m] = true;
-
-                        // Update tempV if the best total was from tempVTotal
-                            if (bestTotal == tempVTotal) {
-                                tempV = updateValueArrayDP(k, budgetLimit, timeLimit, pickedItems, tempV);
-                                value = tempV;
-                            }
-                        }
-                        else{
-                            totalV[k][l][m] = totalV[k-1][l][m];
+                        } else {
+                            totalV[k][l][m] = totalV[k - 1][l][m];
                             pickedItems[k][l][m] = false;
                         }
+
                     }
                 }
             }
-            // for (int i = 0; i < value.length; i++) {
-            //     System.out.print(value[i] + " ");
-            // }
-            //value = updateValueArrayDP(k, budgetLimit, timeLimit, pickedItems, value);
-            //tempV = updateValueArrayDP(k, budgetLimit, timeLimit, pickedItems, value);  // keep an array of original value, modify the temp array only, compare the 2 result of the one picked from orriginal and the one from picked, update the tempArray after find the best sol for the current k
-            // String output ="";
-            // for(int i: value){
-            //     output+= i + " ";
-            // }
-            // output += "";
-            // System.out.println( "\n" +output + totalV[k][budgetLimit][timeLimit]);
-
-            //System.out.print(totalV[k][budgetLimit][timeLimit] + " ");
         }
-        int lastB = budgetLimit;
-        int lastT = timeLimit;
-        for(int k = totalItem; k>=1; k--){
-            System.out.print("item " + (k-1) + " included: " + pickedItems[k][5][5] + "\n");
-            if(pickedItems[k][5][5]){
-                answer.add(graph.getIntersectionsArray()[k-1]);
-                budgetLimit =budgetLimit- budgetArray[k-1];
-                timeLimit =timeLimit- timeArray[k-1];
-            }
-        }
-        System.out.println(totalV[totalItem][5][5]);
-        //System.out.println(pickedItems[totalItem][6][6]);
-        for(String str: answer){
-            System.out.println(str);
-        }
+        answer = showResult(totalItem, budgetLimit, timeLimit, budgetArray, timeArray, totalV, pickedItems, answer);
+        //printMatrices(totalV, totalItem, budgetLimit, timeLimit);
+        System.out.println("total value: " + totalV[totalItem][budgetLimit][timeLimit]);
+        // for(String str: answer){
+        //    System.out.println(str + " time " + ); 
+        // }
         
-        
-        //printAnswer(totalItem, budgetLimit, timeLimit, budgetArray, timeArray, totalV, pickedItems, answer);
-
         return answer.toArray(new String[0]);
     }
 
-    public int[] updateValueArrayDP(int k, int  l, int  m, boolean [][][] pickedItems, int [] value){
+    public int[] updateValueArrayDP(int k, int l, int m, int[] L, int []M, boolean [][][] p, int [] value){
         String [] Intersections = graph.getIntersectionsArray();
         HashMap<String, List<Road>> graphData = graph.getGraph();
         int [] modifiedV = value.clone();
-        if(pickedItems[k][l][m]){
-            for (Road road : graphData.get(Intersections[k - 1])) {
-                String otherIntersection = road.getFirstIntersection().equals(Intersections[k - 1]) ? road.getSecondIntersection() : road.getFirstIntersection();
-                int i = Arrays.binarySearch(Intersections, otherIntersection);
-                modifiedV[i] -= road.getTravelTime(); // Deduct travel time from neighboring intersection
-            }
-        }
-        for (int i = 0; i < value.length; i++) {
-            System.out.print(modifiedV[i] + " ");
-        }
-        System.out.println("");
-
+        ArrayList<Integer> testing = new ArrayList<>();
+        int newl= l;
+        int newm = m;
+        boolean check = false;
         
+        for (int i = k; i >= 1; i--)
+        {
+            if (p[i][newl][newm]){
+                check = true;
+                testing.add(i-1);
+                newl = newl- L[i-1];
+                newm = newm - M[i-1];
+            }
+            
+        }
+        if(check){
+            for(int i : testing){
+                for (Road road : graphData.get(Intersections[i])) {
+                    String otherIntersection = road.getFirstIntersection().equals(Intersections[i]) ? road.getSecondIntersection() : road.getFirstIntersection();
+                    int o = Arrays.binarySearch(Intersections, otherIntersection);
+                    modifiedV[o] -= road.getTravelTime(); // Deduct travel time from neighboring intersection
+                }
+            }  
+        }
+                
         return modifiedV;
     }
 
-    public String[] printAnswer(int n, int w, int s, int [] W, int []S, int [][][] f, boolean[][][] p, ArrayList<String> answer){
-        String result="";
-        result += "\ntotal value: " + f[n][5][5] + "\n";
+    public ArrayList<String> showResult(int n, int w, int s, int [] W, int []S, int[][][] f, boolean[][][] p, ArrayList<String> answer)
+    {
         int l = w;
         int m = s;
         for (int k = n; k >= 1; k--)
         {
-            result += "item " + (k-1) + " included: " + p[k][5][4] + "\n";
             if (p[k][l][m]){
                 answer.add(graph.getIntersectionsArray()[k-1]);
                 l = l - W[k-1];
                 m = m - S[k-1];
+                System.out.println("Picked item " + (k - 1) + " Budget remaining: " + l + " Time remaining: " + m);       
             }
         }
+            return answer;
+    }
 
-        System.out.println(result);
-
-        return answer.toArray(new String[0]);
+    public void printMatrices(int[][][] totalV, int totalItem, int budgetLimit, int timeLimit) {
+        // We assume the totalV has dimensions at least 10x10x10
+        int matricesToPrint = totalItem; // Number of matrices you want to print (maximum of 8 in this case)
+        int maxtrixRows = budgetLimit;     // Size of each matrix (10x10)
+        int matrixCols = timeLimit;
+    
+        // Print matrices for different slices of the totalItem dimension
+        for (int k = 1; k <= matricesToPrint; k++) {
+            //System.out.println("Matrix for totalItem = " + k);
+            for (int b = 0; b <= maxtrixRows; b++) {
+                for (int t = 0; t <= matrixCols; t++) {
+                    System.out.print(totalV[k][b][t] + "\t");  // Print the value in totalV
+                    //System.out.print(totalV[totalItem][b][t] + "\t");
+                }
+                System.out.println(); // Move to the next line after each row
+            }
+            System.out.println(); // Separate matrices by an empty line
+        }
     }
 
     /*
@@ -296,7 +296,6 @@ public class UpgradeCalculator {
         Random rng = new Random();
 
         return subMH(rng, totalItem, budgetLimit, timeLimit, budgetArray, timeArray, value, intersections);
-        //throw new UnsupportedOperationException("Not implemented yet."); // Remove this line when you implement this method
     }
 
     public String[] subMH(Random rng, int totalItem, int budgetLimit, int timeLimit, int [] budgetArray, int [] timeArray, int [] value, String [] intersections){
@@ -304,7 +303,7 @@ public class UpgradeCalculator {
         int iteration = 100;
         int constraintV = 99;
         boolean [] solution = randomSol(totalItem, rng);
-        //boolean [] solution = {false,false,true,false,false,false,false,false,false,};
+        //boolean [] solution = {false,false,true,false,false,false,false,false,false};
         int [] score = evaluateNew(rng, constraintV, totalItem, budgetLimit, timeLimit, solution, budgetArray, timeArray, value);
 
         boolean[] bestSolution = solution.clone();
@@ -335,9 +334,6 @@ public class UpgradeCalculator {
                 answer.add(intersections[i]);
             }
         }
-        // for(String str: answer){
-        //     System.out.println(str);
-        // }
 
         return answer.toArray(new String[0]);
     }
@@ -349,7 +345,7 @@ public class UpgradeCalculator {
         for (Road road : graphData.get(Intersections[k])) {
             String otherIntersection = road.getFirstIntersection().equals(Intersections[k]) ? road.getSecondIntersection() : road.getFirstIntersection();
             int i = Arrays.binarySearch(Intersections, otherIntersection);
-            if (true) {
+            if (flip) {
                 value[i] += road.getTravelTime();
             }
             else{
@@ -357,7 +353,7 @@ public class UpgradeCalculator {
             }
         }
         
-        return value;
+        return value;   
     }
 
     public boolean [] randomSol(int totalItem, Random rng){
@@ -376,11 +372,42 @@ public class UpgradeCalculator {
                 score[2] += budgetArray[i];
                 score[3] += timeArray[i];
                 score[4] += value[i];
+                updateValueArrayMH(i, value, false);
             }
-            updateValueArrayMH(i, value, false);
+            
         }
         score[0] = Math.max(0, score[2] - budgetLimit) * constraintV - score[4];
         score[1] = Math.max(0, score[3] - timeLimit) * constraintV - score[4];
+
+        while (score[0] > 0 || score[1] > 0) {
+            // Randomly pick an item to flip off (set to false) to reduce constraints
+            int itemToFlip = rng.nextInt(totalItem);
+    
+            if (sol[itemToFlip]) {
+                // Flip the item off
+                sol[itemToFlip] = false;
+                // Subtract the item's budget, time, and value
+                score[2] -= budgetArray[itemToFlip];
+                score[3] -= timeArray[itemToFlip];
+                score[4] -= value[itemToFlip];
+            }
+    
+            // Recalculate penalties
+            score[0] = Math.max(0, score[2] - budgetLimit) * constraintV - score[4];
+            score[1] = Math.max(0, score[3] - timeLimit) * constraintV - score[4];
+    
+            // Stop if all items are flipped off
+            boolean allFalse = true;
+            for (boolean b : sol) {
+                if (b) {
+                    allFalse = false;
+                    break;
+                }
+            }
+            if (allFalse) {
+                break;
+            }
+        }    
 
         return score;
     }
@@ -424,6 +451,7 @@ public class UpgradeCalculator {
         int[] scoreFlip = score.clone();
         int newBudget = scoreFlip[2];
         int newTime = scoreFlip[3];
+        
     
         if (sol[itemFlip]) {
             // Flipping off the current item
@@ -437,7 +465,7 @@ public class UpgradeCalculator {
     
         // Check if the new budget and time exceed the limit too much
         if (newBudget > budgetLimit || newTime > timeLimit) {
-            // If the limits are violated, keep the original score
+            
             return score;
         }
     
@@ -479,24 +507,6 @@ class Road {
     }
 }
 
-// class Intersection{
-//     private String name;
-//     private int improvement;
-//     private Road road;
-
-//     public Intersection() {
-//         this.improvement=0;
-//         this.name="";
-//         this.road=null;
-//     }
-
-//     public Intersection(String name, int improvement, Road road){
-//         this.improvement= improvement;
-//         this.name= name;
-//         this.road= road;
-//     }
-
-// }
 
 class Graph{
     private final HashMap<String, List<Road>> graph = new HashMap<>();
@@ -511,7 +521,7 @@ class Graph{
             String roadName = city[0];
             String firstEndpoint = city[1];
             String secondEndpoint = city[2];
-            int avgTravelTime = Integer.valueOf(city[3]);
+            int avgTravelTime = (int)(Double.parseDouble(city[3]));
 
             // Add the road to the roadList
             roadList.add(new Road(roadName, firstEndpoint, secondEndpoint, avgTravelTime));

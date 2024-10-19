@@ -4,7 +4,7 @@ import java.util.Arrays;
 /*
  * COMP2230 - Algorithms
  * Assignment 2 - Main
- * @author  Studious Student - c1234567 (Replace with your name and student number)
+ * @author  Minh Thai Nguyen - c3440776 
  * @version 1.0
  * 
  * This file runs the assignment; you may modify this for testing purposes, but for marking you must ensure that your code works with the original version of this file.
@@ -42,12 +42,16 @@ public class UpgradeMain {
         // String getRandomIntersection() // Call storeVerifyMap first, will return a random intersection name
         // String getRandomRoad() // Call storeVerifyMap first, will return a random road name
         // Your test code may be placed below this line:
-
+        
+        // String [] answer1 = analyser.dynamicProgrammingSolver(20, 20);
+        // String [] answer2 = analyser.heuristicSolver(20, 20);
+        // String [] answer3 = analyser.heuristicSolver(20, 20);
+        //verifier.verify_validSolution(20, 20, analyser.upgradeData, answer);
 
     }
 
     // The following test map is shown in the assignment specification (Figure 1), you may use this to test your code
-    // WARNING - Note that the while all numbers in the test map are integers, the map generator and upgrade analyser may give you ints
+    // WARNING - Note that the while all numbers in the test map are integers, the map generator and upgrade analyser may give you doubles
     private final String TESTMAP = 
         "{{Red Street, 0 - North Crossing, 2 - South Junction, 2}, {Yellow Street, 2 - South Junction, 6 - Western Metro, 4}, "
       + "{Green Street, 2 - South Junction, 5 - Eastern Plaza, 1}, {Blue Street, 5 - Eastern Plaza, 7 - Simple Shops, 2}, "
@@ -96,7 +100,7 @@ public class UpgradeMain {
         solution = new String [] {"2 - South Junction"};
         java.util.Arrays.sort(answer);
         java.util.Arrays.sort(solution);
-        System.out.print("CHECK: Hill Climbing [1/100]\n");
+        System.out.print("CHECK: Hill Climbing [100/1]\n");
         if (java.util.Arrays.equals(answer, solution))
         {
             System.out.print("-> Passed\n");

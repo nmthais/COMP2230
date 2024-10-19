@@ -1,0 +1,44 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}",
+            "args": ["test"],
+        },
+        {
+            "type": "java",
+            "name": "UpgradeMain",
+            "request": "launch",
+            "mainClass": "UpgradeMain",
+            "projectName": "assignment2base_a2a43fa2",
+            "args": ["test"],
+        },
+        {
+            "type": "java",
+            "name": "knapsack2",
+            "request": "launch",
+            "mainClass": "knapsack2",
+            "projectName": "assignment2base_a2a43fa2"
+        },
+        {
+            "type": "java",
+            "name": "knapsack3",
+            "request": "launch",
+            "mainClass": "knapsack3",
+            "projectName": "assignment2base_a2a43fa2"
+        },
+        {
+            "type": "java",
+            "name": "metaheuristic",
+            "request": "launch",
+            "mainClass": "metaheuristic",
+            "projectName": "assignment2base_a2a43fa2"
+        }
+    ]
+}

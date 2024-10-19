@@ -30,7 +30,7 @@ public class knapsack3
     public static void knapsackSolution(int n, int w, int s, int[] V, int[]W, int[]S, int [][][] f, boolean [][][] p)
     {
     // initialise the base cases
-        int[] temp = V.clone();
+        //int[] temp = V.clone();
         for (int l = 0; l <= w; l++)
         {
             f[0][l][0] = 0; // when no item, the value is 0
