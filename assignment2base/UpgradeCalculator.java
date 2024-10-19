@@ -32,7 +32,7 @@ public class UpgradeCalculator {
      */
     public void loadMap(){
         if (cityMap == null) {
-            cityMap = mapGen.generateMap(10); // You can optionally pass in an integer here to set the size of the largest connected component in the map
+            cityMap = mapGen.generateMap(); // You can optionally pass in an integer here to set the size of the largest connected component in the map
         }
 
         // Write your code below this line - just copy from your assignment 1 solution, it's the same map generator
@@ -52,10 +52,6 @@ public class UpgradeCalculator {
             upgradeData = checker.upgradeAnalyser();
         }
         // Write your code below this line
-        //System.out.println(budgetLimit +" " + timeLimit);
-
-        // timeLimit =9;
-        // budgetLimit=9;
         UpgradeCity upgrade = new UpgradeCity(upgradeData);
         int totalItem = graph.getGraph().size();
         //int budgetLimit
@@ -116,9 +112,6 @@ public class UpgradeCalculator {
         answer = showResult(totalItem, budgetLimit, timeLimit, budgetArray, timeArray, totalV, pickedItems, answer);
         //printMatrices(totalV, totalItem, budgetLimit, timeLimit);
         System.out.println("total value: " + totalV[totalItem][budgetLimit][timeLimit]);
-        // for(String str: answer){
-        //    System.out.println(str + " time " + ); 
-        // }
         
         return answer.toArray(new String[0]);
     }
@@ -165,7 +158,7 @@ public class UpgradeCalculator {
                 answer.add(graph.getIntersectionsArray()[k-1]);
                 l = l - W[k-1];
                 m = m - S[k-1];
-                System.out.println("Picked item " + (k - 1) + " Budget remaining: " + l + " Time remaining: " + m);       
+                //System.out.println("Picked item " + (k - 1) + " Budget remaining: " + l + " Time remaining: " + m);       
             }
         }
             return answer;
@@ -183,7 +176,6 @@ public class UpgradeCalculator {
             for (int b = 0; b <= maxtrixRows; b++) {
                 for (int t = 0; t <= matrixCols; t++) {
                     System.out.print(totalV[k][b][t] + "\t");  // Print the value in totalV
-                    //System.out.print(totalV[totalItem][b][t] + "\t");
                 }
                 System.out.println(); // Move to the next line after each row
             }
@@ -215,31 +207,32 @@ public class UpgradeCalculator {
         boolean [] pickedIntersections = new boolean[intersections.length];
 
         return heuristicSub(totalItem, budgetLimit, timeLimit, budgetArray, timeArray, value, intersections, pickedIntersections);
-        //throw new UnsupportedOperationException("Not implemented yet."); // Remove this line when you implement this method
     }
 
     public String [] heuristicSub(int totalItem, int budgetLimit, int timeLimit, int[]budgetArray, int[] timeArray, int [] value, String [] intersections, boolean [] pickedItems){
         ArrayList<String> answer = new ArrayList<>();
-        int indexMax;
+        int indexMax, totalV=0;
 
         while(budgetLimit >0 && timeLimit >0){
             indexMax = getIndexMax(totalItem, budgetLimit, timeLimit, budgetArray, timeArray, value, pickedItems);
+            if(indexMax<0){
+                break;
+            }
+            
             pickedItems[indexMax] = true;
             budgetLimit -= budgetArray[indexMax];
             timeLimit -= timeArray[indexMax];
             updateValueArrayH(indexMax, value);
             answer.add(intersections[indexMax]);
-            //System.out.println(budgetLimit + timeLimit);
+            totalV += value[indexMax];  
+            
         }
-        // for(String str: answer){
-        //     System.out.println(str);
-        // }
-        
+        System.out.println("Total value: " + totalV);
         return answer.toArray(new String [0]);
     }
 
     public int getIndexMax(int totalItem, int budgetLimit, int timeLimit ,int [] budgetArray, int [] timeArray, int [] value, boolean [] pickedItems){
-        int maxIndex=0; 
+        int maxIndex=-1; 
         int comparator=0;
         boolean [] check = new boolean[totalItem];
 
@@ -247,7 +240,7 @@ public class UpgradeCalculator {
             check[i] = !(budgetLimit < budgetArray[i] || timeLimit < timeArray[i]);
         }
         for(int i=0;i<value.length;i++){
-            if((value[i] / budgetArray[i]) + (value[i] + timeArray[i]) > comparator && check[i] && !pickedItems[i]){    // if its in bound, item is not picked and its has largest value budget time ratio then pick
+            if((value[i] / budgetArray[i]) + (value[i] / timeArray[i]) > comparator && check[i] && !pickedItems[i]){    // if its in bound, item is not picked and its has largest value budget time ratio then pick
                 comparator = value[i];
                 maxIndex = i;
             }
@@ -265,9 +258,6 @@ public class UpgradeCalculator {
             int i = Arrays.binarySearch(Intersections, otherIntersection);
             value[i] -= road.getTravelTime(); // Deduct travel time from neighboring intersection
         }
-        // for (int i = 0; i < value.length; i++) {
-        //     System.out.print(value[i] + " ");
-        // }
         return value;
     }
 
@@ -300,7 +290,7 @@ public class UpgradeCalculator {
 
     public String[] subMH(Random rng, int totalItem, int budgetLimit, int timeLimit, int [] budgetArray, int [] timeArray, int [] value, String [] intersections){
         ArrayList<String> answer = new ArrayList<>();
-        int iteration = 100;
+        int iteration = 100, totalV=0;
         int constraintV = 99;
         boolean [] solution = randomSol(totalItem, rng);
         //boolean [] solution = {false,false,true,false,false,false,false,false,false};
@@ -332,8 +322,10 @@ public class UpgradeCalculator {
         for(int i=0; i< bestSolution.length; i++){
             if(bestSolution[i]){
                 answer.add(intersections[i]);
+                totalV += value[i];
             }
         }
+        System.out.println("Total value: " + totalV);
 
         return answer.toArray(new String[0]);
     }
@@ -390,6 +382,7 @@ public class UpgradeCalculator {
                 score[2] -= budgetArray[itemToFlip];
                 score[3] -= timeArray[itemToFlip];
                 score[4] -= value[itemToFlip];
+                updateValueArrayMH(itemToFlip, value, true);
             }
     
             // Recalculate penalties

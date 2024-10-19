@@ -43,9 +43,18 @@ public class UpgradeMain {
         // String getRandomRoad() // Call storeVerifyMap first, will return a random road name
         // Your test code may be placed below this line:
         
-        // String [] answer1 = analyser.dynamicProgrammingSolver(20, 20);
+        // String [] answer1 = analyser.dynamicProgrammingSolver(100, 100);
+        // for(String str: answer1){
+        //     System.out.println( "1. " + str);
+        // }
         // String [] answer2 = analyser.heuristicSolver(20, 20);
-        // String [] answer3 = analyser.heuristicSolver(20, 20);
+        // for(String str: answer2){
+        //     System.out.println( "2. " +str);
+        // }
+        // String [] answer3 = analyser.hillClimbingSolver(100, 100);
+        // for(String str: answer3){
+        //     System.out.println( "3. " +str);
+        // }
         //verifier.verify_validSolution(20, 20, analyser.upgradeData, answer);
 
     }
